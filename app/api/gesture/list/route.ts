@@ -1,33 +1,38 @@
-import { NextResponse } from "next/server";
-import { readdir, readFile } from "fs/promises";
+import { NextRequest, NextResponse } from "next/server";
+import { promises as fs } from "fs";
 import path from "path";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const folder = path.join(process.cwd(), "public", "gesture");
+    const { searchParams } = new URL(req.url);
+    const side = (searchParams.get("side") || "left") as "left" | "right";
+    const language = searchParams.get("language") || "auslan";
+
+    const baseDir = path.join(process.cwd(), "public", "gesture", language, side);
+
     let dataset: Record<string, number[][]> = {};
     let files: string[] = [];
     try {
-      files = await readdir(folder);
-    } catch (_) {
-      // folder chưa có -> trả rỗng
+      files = await fs.readdir(baseDir);
+    } catch {
+      // folder chưa có → trả rỗng
       return NextResponse.json({ ok: true, dataset: {} });
     }
 
     for (const f of files) {
       if (!f.endsWith(".json")) continue;
-      const label = f.replace(/\.json$/i, "");
+      const label = f.replace(/\.json$/, "");
       try {
-        const buf = await readFile(path.join(folder, f), "utf8");
-        const arr = JSON.parse(buf);
+        const raw = await fs.readFile(path.join(baseDir, f), "utf8");
+        const arr = JSON.parse(raw);
         if (Array.isArray(arr)) dataset[label] = arr;
-      } catch (_) {
-        // bỏ qua file lỗi
+      } catch {
+        // skip broken files
       }
     }
 
-    return NextResponse.json({ ok: true, dataset });
-  } catch (err: any) {
-    return NextResponse.json({ ok: false, error: err?.message || "Server error" }, { status: 500 });
+    return NextResponse.json({ ok: true, dataset, side, language });
+  } catch (e: any) {
+    return NextResponse.json({ ok: false, error: e?.message || "List error" }, { status: 500 });
   }
 }

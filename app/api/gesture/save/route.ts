@@ -1,44 +1,41 @@
-import { NextResponse } from "next/server";
-import { mkdir, readFile, writeFile } from "fs/promises";
+import { NextRequest, NextResponse } from "next/server";
+import { promises as fs } from "fs";
 import path from "path";
 
-type SaveBody = {
-  label: string;
-  samples: number[][]; // mỗi sample là vec63 đã chuẩn hoá & mirror
-};
-
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body: SaveBody = await req.json();
-    const label = (body.label || "").trim();
-    if (!label) {
-      return NextResponse.json({ ok: false, error: "Missing label" }, { status: 400 });
-    }
-    const samples = Array.isArray(body.samples) ? body.samples : [];
-    if (samples.length === 0) {
-      return NextResponse.json({ ok: false, error: "No samples" }, { status: 400 });
+    const { label, samples, side, language } = await req.json();
+
+    if (!label || !Array.isArray(samples) || !side || !language) {
+      return NextResponse.json({ ok: false, error: "Invalid params" }, { status: 400 });
     }
 
-    const folder = path.join(process.cwd(), "public", "gesture");
-    await mkdir(folder, { recursive: true });
+    const baseDir = path.join(process.cwd(), "public", "gesture", language, side);
+    const filePath = path.join(baseDir, `${label}.json`);
 
-    const filePath = path.join(folder, `${label}.json`);
+    await fs.mkdir(baseDir, { recursive: true });
 
-    // Nếu file đã có thì merge thêm (append-merge)
+    // Merge: append new samples to existing file if any
     let existing: number[][] = [];
     try {
-      const buf = await readFile(filePath, "utf8");
-      const parsed = JSON.parse(buf);
-      if (Array.isArray(parsed)) existing = parsed;
-    } catch (_) {
-      // file chưa tồn tại: bỏ qua
+      const raw = await fs.readFile(filePath, "utf8");
+      existing = JSON.parse(raw);
+      if (!Array.isArray(existing)) existing = [];
+    } catch {
+      // file not exist → ignore
     }
 
     const merged = [...existing, ...samples];
-    await writeFile(filePath, JSON.stringify(merged, null, 2), "utf8");
+    await fs.writeFile(filePath, JSON.stringify(merged, null, 2), "utf8");
 
-    return NextResponse.json({ ok: true, label, count: merged.length });
-  } catch (err: any) {
-    return NextResponse.json({ ok: false, error: err?.message || "Server error" }, { status: 500 });
+    return NextResponse.json({
+      ok: true,
+      label,
+      count: merged.length,
+      side,
+      language,
+    });
+  } catch (e: any) {
+    return NextResponse.json({ ok: false, error: e?.message || "Save error" }, { status: 500 });
   }
 }

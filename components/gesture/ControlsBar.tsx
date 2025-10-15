@@ -11,11 +11,18 @@ type Props = {
   onExport: () => void;
   onReload: () => void;
   onClear: () => void;
+  // NEW
+  side: "left" | "right";
+  setSide: (v: "left" | "right") => void;
+  language: string;
+  setLanguage: (v: string) => void;
+  languages?: string[]; // optional: để đổ dropdown
 };
 
 export default function ControlsBar({
   ready, labelInput, setLabelInput, isRecording, onToggleRecording,
-  threshold, setThreshold, onExport, onReload, onClear
+  threshold, setThreshold, onExport, onReload, onClear,
+  side, setSide, language, setLanguage, languages = ["auslan", "american"]
 }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm">
@@ -28,6 +35,31 @@ export default function ControlsBar({
           placeholder="A"
           disabled={isRecording}
         />
+      </div>
+
+      <div className="flex items-center gap-2">
+        <span>Language:</span>
+        <select
+          className="border rounded px-2 py-1"
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          disabled={isRecording}
+        >
+          {languages.map(l => <option key={l} value={l}>{l}</option>)}
+        </select>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <span>Side:</span>
+        <select
+          className="border rounded px-2 py-1"
+          value={side}
+          onChange={(e) => setSide(e.target.value as "left" | "right")}
+          disabled={isRecording}
+        >
+          <option value="left">left</option>
+          <option value="right">right</option>
+        </select>
       </div>
 
       <button

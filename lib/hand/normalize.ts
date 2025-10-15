@@ -21,7 +21,13 @@ export function buildPalmFrame(lm: LM) {
   return { R, wrist };
 }
 
-export function orientNormalizeWorld(lm: LM, handed: "Left" | "Right" | "Unknown" = "Unknown"): LM {
+export function orientNormalizeWorld(
+  lm: LM,
+  handed: "Left" | "Right" | "Unknown" = "Unknown",
+  opts?: { mirrorLeft?: boolean }
+): LM {
+  const mirrorLeft = opts?.mirrorLeft ?? true;
+
   const wrist = lm[0];
   const mid = lm[9];
   const scale = Math.hypot(mid.x - wrist.x, mid.y - wrist.y, mid.z - wrist.z) || 1;
@@ -30,7 +36,8 @@ export function orientNormalizeWorld(lm: LM, handed: "Left" | "Right" | "Unknown
   return lm.map((p) => {
     const t = { x: (p.x - w.x) / scale, y: (p.y - w.y) / scale, z: (p.z - w.z) / scale };
     const r = mulRT(R, t);
-    return handed === "Left" ? { x: -r.x, y: r.y, z: r.z } : r;
+    // chỉ mirror nếu bật
+    return mirrorLeft && handed === "Left" ? { x: -r.x, y: r.y, z: r.z } : r;
   });
 }
 
