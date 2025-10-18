@@ -6,6 +6,7 @@ import { LM, orientNormalizeWorld, toVec63 } from "@/lib/hand/normalize";
 import { meanVec, rmsdVec } from "@/lib/hand/stats";
 import { loadDatasetFromDisk } from "@/lib/gesture/storage";
 import { checkWord, getLastWordAtCursor, replaceLastWordAtCursor } from "@/lib/spell/api";
+import { Footer, Header } from "@/components";
 
 type Dataset = Record<string, number[][]>;
 
@@ -210,60 +211,106 @@ export default function PredictPage() {
   }, [centroids, language, side, streamText]);
 
   return (
-    <div className="max-w-5xl mx-auto p-4 space-y-4">
-      {/* Top controls: Language & Side */}
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <div className="flex items-center gap-2">
-          <span>Language:</span>
-          <select value={language} onChange={e=>setLanguage(e.target.value)} className="border rounded px-2 py-1">
-            <option value="auslan">Auslan</option>
-            <option value="american">American</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-2">
-          <span>Side:</span>
-          <select value={side} onChange={e=>setSide(e.target.value as any)} className="border rounded px-2 py-1">
-            <option value="left">Left</option>
-            <option value="right">Right</option>
-          </select>
-        </div>
-        <span className="ml-auto text-xs">{ready ? "Camera: Ready" : "Camera: Loading…"}</span>
-      </div>
+    <>
+      <Header />
 
-      {/* Camera */}
-      <div className="relative aspect-video bg-black rounded-lg overflow-hidden shadow">
-        <video ref={videoRef} className="hidden" playsInline />
-        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
-      </div>
+      <div className="mx-auto max-w-5xl p-4 sm:p-6 my-6 sm:my-10 space-y-5 sm:space-y-6 text-gray-900">
 
-      {/* Live letters */}
-      <div className="border rounded p-3">
-        <div className="text-sm font-semibold mb-2">
-          Live letters — {language}/{side}
-        </div>
-        <div className="min-h-[2.5rem] px-2 py-1 bg-gray-50 rounded font-mono text-lg">
-          {streamText || "—"}
+        {/* Top controls: Language & Side */}
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-3 sm:gap-6 md:gap-8 text-[14px] sm:text-[15px]">
+          <label className="flex items-center gap-2 sm:gap-3 font-medium w-full sm:w-auto">
+            <span>Language:</span>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="h-10 sm:h-11 px-3 sm:px-4 rounded-xl border border-gray-300 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            >
+              <option value="auslan">Auslan</option>
+              <option value="american">American</option>
+            </select>
+          </label>
+
+          <label className="flex items-center gap-2 sm:gap-3 font-medium w-full sm:w-auto">
+            <span>Side:</span>
+            <select
+              value={side}
+              onChange={(e) => setSide(e.target.value as any)}
+              className="h-10 sm:h-11 px-3 sm:px-4 rounded-xl border border-gray-300 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            >
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+            </select>
+          </label>
+
+          <div className="w-full md:w-auto md:ml-auto mt-2 md:mt-0 flex items-center gap-2 justify-start md:justify-end text-[14px] sm:text-[15px] font-medium">
+            <span
+              className={`inline-flex h-2.5 w-2.5 rounded-full ${
+                ready ? "bg-emerald-500" : "bg-amber-400"
+              }`}
+            />
+            <span className="truncate">{ready ? "Camera: Ready" : "Camera: Loading…"}</span>
+          </div>
         </div>
 
-        <div className="mt-3 text-sm flex items-center gap-2">
-          <b>Spellcheck:</b>
-          {spellLoading ? <span>checking…</span> : lastCheckedWord ? <span>last: <i>{lastCheckedWord}</i></span> : <span>—</span>}
-          {spellError && <span className="text-red-500">• {spellError}</span>}
+        {/* Camera card */}
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-md p-3 sm:p-4">
+          <div className="relative aspect-video rounded-xl overflow-hidden shadow-sm bg-black">
+            <video ref={videoRef} className="hidden" playsInline />
+            <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+          </div>
+        </div>
+
+        {/* Live letters / Spellcheck */}
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm p-3 sm:p-4">
+          <div className="mb-2 text-sm sm:text-[15px] font-semibold text-gray-700">
+            Live letters —{" "}
+            <span className="font-normal text-gray-600">
+              {language}/{side}
+            </span>
+          </div>
+
+          <div className="min-h-[2.5rem] px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg font-mono text-base sm:text-lg">
+            {streamText || "—"}
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-gray-800">
+            <b className="font-semibold">Spellcheck:</b>
+            {spellLoading ? (
+              <span>checking…</span>
+            ) : lastCheckedWord ? (
+              <span>
+                last: <i>{lastCheckedWord}</i>
+              </span>
+            ) : (
+              <span>—</span>
+            )}
+            {spellError && <span className="text-red-500">• {spellError}</span>}
+            {spellSuggestions.length > 0 && (
+              <span className="ml-0 sm:ml-2 text-xs text-gray-600">
+                Use OP1…OP5 gestures to pick suggestions.
+              </span>
+            )}
+          </div>
+
           {spellSuggestions.length > 0 && (
-            <span className="ml-2 text-xs text-gray-600">Use OP1…OP5 gestures to pick suggestions.</span>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {spellSuggestions.slice(0, 5).map((s, i) => (
+                <span
+                  key={s}
+                  className={`px-2 py-1 border border-gray-200 rounded-lg text-sm ${
+                    i === 0 ? "bg-black text-white" : "bg-gray-50"
+                  }`}
+                >
+                  {i + 1}. {s}
+                </span>
+              ))}
+            </div>
           )}
         </div>
-
-        {spellSuggestions.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {spellSuggestions.slice(0,5).map((s,i)=>(
-              <span key={s} className={`px-2 py-1 border rounded ${i===0?"bg-black text-white":""}`}>
-                {i+1}. {s}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
-    </div>
+
+      <Footer />
+    </>
+
   );
 }

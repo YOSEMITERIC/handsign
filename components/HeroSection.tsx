@@ -28,6 +28,7 @@ export default function HeroSection() {
             Project to recognize sign language and promote greater awareness and sensitivity toward the Deaf and Hard of Hearing community, Mix
           </p>
 
+        <div className="flex  justify-center items-center gap-4">
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               className="border-2 border-teal-600 text-teal-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-teal-600 hover:text-white transition-all duration-300"
@@ -38,16 +39,18 @@ export default function HeroSection() {
                 Try it now
             </Link>
           </div>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               className="border-2 border-teal-600 text-teal-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-teal-600 hover:text-white transition-all duration-300"
                 href={{
                   pathname: '/record',
                 }}
               >
-               Or Record it now
+               Record it now
             </Link>
           </div>
+        </div>
+
         </div>
       </div>
     </section>

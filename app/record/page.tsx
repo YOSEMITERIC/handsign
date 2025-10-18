@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { FilesetResolver, GestureRecognizer } from "@mediapipe/tasks-vision";
 import { LM, orientNormalizeWorld, toVec63 } from "@/lib/hand/normalize";
 import { saveLabelToDisk, loadDatasetFromDisk } from "@/lib/gesture/storage";
+import Header from "@/components/Header";
+import { Footer } from "@/components";
 
 type Dataset = Record<string, number[][]>;
 
@@ -158,76 +160,89 @@ export default function RecordPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-4">
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <div className="flex items-center gap-2">
-          <span>Language:</span>
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="border rounded px-2 py-1"
+    <>
+      <Header />
+      <div className="mx-auto max-w-4xl p-4 sm:p-6 my-6 sm:my-10 space-y-4 sm:space-y-5 text-gray-900">
+
+        {/* Top controls */}
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-3 sm:gap-4 lg:gap-6 text-[14px] sm:text-[15px]">
+          <label className="flex items-center gap-2 sm:gap-3 font-medium w-full sm:w-auto">
+            <span>Language:</span>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="h-10 sm:h-11 w-full sm:w-auto px-3 sm:px-4 rounded-xl border border-gray-300 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            >
+              <option value="auslan">Auslan</option>
+              <option value="american">American</option>
+            </select>
+          </label>
+
+          <label className="flex items-center gap-2 sm:gap-3 font-medium w-full sm:w-auto">
+            <span>Side:</span>
+            <select
+              value={side}
+              onChange={(e) => setSide(e.target.value as "left" | "right")}
+              className="h-10 sm:h-11 w-full sm:w-auto px-3 sm:px-4 rounded-xl border border-gray-300 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            >
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+            </select>
+          </label>
+
+          <label className="flex items-center gap-2 sm:gap-3 font-medium grow md:grow-0 w-full md:w-auto">
+            <span>Label:</span>
+            <input
+              className="h-10 sm:h-11 w-full sm:w-56 px-3 sm:px-4 rounded-xl border border-gray-300 bg-white shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-gray-50"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              disabled={isRecording}
+              placeholder="e.g., A, Hello"
+            />
+          </label>
+
+          <button
+            ref={startBtnRef}
+            type="button"
+            onClick={toggleRecording}
+            disabled={!ready}
+            className={`h-10 sm:h-11 px-4 sm:px-5 rounded-xl font-medium border shadow-sm transition w-full sm:w-auto
+              ${isRecording
+                ? "bg-red-600 text-white border-red-600 hover:bg-red-700"
+                : "bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700"}
+              ${!ready ? "opacity-60 cursor-not-allowed" : ""}`}
           >
-            <option value="auslan">Auslan</option>
-            <option value="american">American</option>
-          </select>
+            {isRecording ? "Stop" : "Start"}
+          </button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span>Side:</span>
-          <select
-            value={side}
-            onChange={(e) => setSide(e.target.value as "left" | "right")}
-            className="border rounded px-2 py-1"
-          >
-            <option value="left">Left</option>
-            <option value="right">Right</option>
-          </select>
+        <div className="w-full md:w-auto md:ml-auto mt-2 md:mt-0 flex items-center gap-2 justify-start text-[14px] sm:text-[15px] font-medium">
+            <span className={`inline-flex h-2.5 w-2.5 rounded-full ${ready ? "bg-emerald-500" : "bg-amber-400"}`} />
+            <span className="truncate">{ready ? "Camera: Ready" : "Camera: Loading…"}</span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span>Label:</span>
-          <input
-            className="border rounded px-2 py-1 w-40"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            disabled={isRecording}
-          />
+        {/* Camera card */}
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-md p-3 sm:p-4">
+          <div className="relative aspect-video rounded-xl overflow-hidden shadow-sm bg-black">
+            <video ref={videoRef} className="hidden" playsInline />
+            <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+          </div>
         </div>
 
-        <button
-          ref={startBtnRef}
-          type="button"
-          onClick={toggleRecording}
-          disabled={!ready}
-          className={`px-3 py-1 rounded border ${
-            isRecording ? "bg-red-600 text-white" : ""
-          }`}
-        >
-          {isRecording ? "Stop" : "Start"}
-        </button>
-
-        <span className="ml-auto text-xs">
-          {ready ? "Camera: Ready" : "Camera: Loading…"}
-        </span>
-      </div>
-
-      <div className="relative aspect-video bg-black rounded-lg overflow-hidden shadow">
-        <video ref={videoRef} className="hidden" playsInline />
-        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
-      </div>
-
-      <div className="text-sm">
-        <b>Hint:</b> Click <i>Start</i>, đưa tay tạo hình cho nhãn{" "}
-        <code>{label}</code>, bấm <kbd>Enter</kbd> để chụp. Bấm <i>Stop</i> để
-        lưu.
-      </div>
-
-      <div className="text-xs bg-gray-50 border rounded p-2">
-        <div>
-          <b>Status:</b> {msg}
+        {/* Hint */}
+        <div className="text-[14px] sm:text-[15px] text-gray-800 bg-white border border-gray-200 rounded-xl p-3 sm:p-4 shadow-sm">
+          <b>Hint:</b> Click <i>Start</i>, make a hand gesture for the label <code className="px-1 rounded bg-gray-100">{label}</code>, then press <kbd className="px-1 rounded bg-gray-100 border border-gray-200">Enter</kbd> to capture. Click <i>Stop</i> to save.
         </div>
-        <div>Current session samples: {samples.length}</div>
+
+        {/* Session status */}
+        <div className="text-sm sm:text-[15px] bg-gray-50 border border-gray-200 rounded-xl p-3 sm:p-4">
+          <div className="mb-1"><b>Status:</b> {msg}</div>
+          <div>Current session samples: {samples.length}</div>
+        </div>
+
       </div>
-    </div>
+      <Footer />
+    </>
+
   );
 }
