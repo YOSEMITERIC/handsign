@@ -1,6 +1,6 @@
 import { V3, sub, cross, normalizeV, norm, mulRT } from "./math";
 
-export type LM = V3[]; // 21 điểm
+export type LM = V3[]; // 21 point
 
 export function buildPalmFrame(lm: LM) {
   const wrist = lm[0];
@@ -36,7 +36,7 @@ export function orientNormalizeWorld(
   return lm.map((p) => {
     const t = { x: (p.x - w.x) / scale, y: (p.y - w.y) / scale, z: (p.z - w.z) / scale };
     const r = mulRT(R, t);
-    // chỉ mirror nếu bật
+    // only mirror if turn on
     return mirrorLeft && handed === "Left" ? { x: -r.x, y: r.y, z: r.z } : r;
   });
 }

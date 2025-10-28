@@ -25,3 +25,25 @@ export async function checkWord(word: string): Promise<SpellResult> {
   const corrData = await corrRes.json();
   return { misspelled: true, suggestions: (corrData?.corrections || []).slice(0, 5) };
 }
+
+
+export async function checkGrammar(sentence: string, language = "en-AU") {
+  console.log("📤 LT send:", { text: sentence, language });
+  if (!sentence || sentence.trim().length < 2) {
+    return { matches: [] as Array<{ offset: number; length: number; replacements: { value: string }[] }> };
+  }
+  const resp = await fetch("/api/lt/check", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: sentence, language }),
+  });
+  const data = await resp.json()
+  console.log("📥 LT matches:", data.matches);
+  // Chuẩn hoá nhẹ: chỉ lấy các trường cần dùng
+  const matches = Array.isArray(data?.matches) ? data.matches.map((m: any) => ({
+    offset: m?.offset ?? 0,
+    length: m?.length ?? 0,
+    replacements: Array.isArray(m?.replacements) ? m.replacements : [],
+  })) : [];
+  return { matches }
+}

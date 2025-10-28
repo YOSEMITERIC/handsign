@@ -12,7 +12,7 @@ export const normalizeV = (a: V3) => {
   return { x: a.x / n, y: a.y / n, z: a.z / n };
 };
 
-// mul (R^T) * v, với R = [x' y' z'] (cột)
+// mul (R^T) * v, with R = [x' y' z'] (column)
 export function mulRT(R: number[][], v: V3): V3 {
   return {
     x: R[0][0] * v.x + R[1][0] * v.y + R[2][0] * v.z,

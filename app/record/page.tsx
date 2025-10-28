@@ -19,7 +19,7 @@ export default function RecordPage() {
   const lastWLRef = useRef<LM | null>(null);
   const lastHandRef = useRef<"Left" | "Right" | "Unknown">("Unknown");
 
-  const [language, setLanguage] = useState<string>("auslan");
+  const [language, setLanguage] = useState<string>("american");
   const [side, setSide] = useState<"left" | "right">("left");
   const [label, setLabel] = useState<string>("Input the Label");
   const [isRecording, setIsRecording] = useState(false);

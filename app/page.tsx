@@ -2,7 +2,6 @@
 
 import { Header, HeroSection } from "../components/";
 import Footer from "../components/Footer";
-import HomeLanguageCards from "@/components/LanguageCards";
 
 export default function HomePage() {
 
