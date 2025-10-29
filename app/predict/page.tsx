@@ -355,12 +355,11 @@ export default function PredictPage() {
     };
   }, []);
 
-  return (
-    <>
+return (
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50/70 via-white to-white text-slate-900 isolate">
       <Header />
 
-      <div className="mx-auto max-w-5xl p-4 sm:p-6 my-6 sm:my-10 space-y-5 sm:space-y-6 text-gray-900">
-        
+      <div className="mx-auto max-w-5xl p-4 sm:p-6 my-6 sm:my-10 space-y-5 sm:space-y-6">
         {/* Language & Side */}
         <div className="flex flex-wrap md:flex-nowrap items-center gap-3 sm:gap-6 md:gap-8 text-sm sm:text-base font-medium">
           <label className="flex items-center gap-2">
@@ -368,7 +367,7 @@ export default function PredictPage() {
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="h-10 px-4 rounded-xl border"
+              className="h-10 px-4 rounded-xl border border-slate-300 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             >
               <option value="auslan">Auslan</option>
               <option value="american">American</option>
@@ -380,32 +379,39 @@ export default function PredictPage() {
             <select
               value={side}
               onChange={(e) => setSide(e.target.value as any)}
-              className="h-10 px-4 rounded-xl border"
+              className="h-10 px-4 rounded-xl border border-slate-300 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             >
               <option value="left">Left</option>
               <option value="right">Right</option>
             </select>
           </label>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="w-full md:w-auto md:ml-auto mt-2 md:mt-0 flex items-center gap-2 text-[14px] sm:text-[15px] font-medium">
             <span className={`inline-flex h-2.5 w-2.5 rounded-full ${ready ? "bg-emerald-500" : "bg-amber-400"}`} />
             <span className="truncate">{ready ? "Camera: Ready" : "Camera: Loading…"}</span>
           </div>
         </div>
 
         {/* Camera */}
-        <div className="rounded-2xl border bg-white shadow-md p-4">
-          <div className="relative aspect-video rounded-xl overflow-hidden bg-black shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-md p-3 sm:p-4">
+          <div
+            className="
+              relative overflow-hidden rounded-xl bg-black shadow-sm
+              h-[58vh] min-h-[320px]               /* on phones */
+              sm:h-[400px] md:h-[460px] lg:h-[520px] /* desktop/laptop sizes */
+              max-h-[calc(100vh-220px)]            /* avoid pushing under footer on tiny screens */
+            "
+          >
             <video ref={videoRef} className="hidden" playsInline />
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
           </div>
         </div>
 
         {/* Live letters + Speak on the same row */}
-        <div className="rounded-2xl border bg-white shadow-md p-4">
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-md p-3 sm:p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-semibold text-gray-700">
-              Live letters — <span className="font-normal text-gray-600">{language}/{side}</span>
+            <div className="text-sm font-semibold text-slate-700">
+              Live letters — <span className="font-normal text-slate-600">{language}/{side}</span>
             </div>
             <button
               onClick={() => speakText(streamTextRef.current, "american")}
@@ -416,43 +422,38 @@ export default function PredictPage() {
             </button>
           </div>
 
-          <div className="min-h-[2.5rem] px-3 py-2 bg-gray-50 border rounded-lg font-mono text-lg">
+          <div className="min-h-[2.5rem] px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-lg">
             {streamText || "—"}
           </div>
 
-          {speaking && (
-            <div className="mt-1 text-xs text-emerald-600 font-medium">Speaking…</div>
-          )}
-
+          {speaking && <div className="mt-1 text-xs text-emerald-600 font-medium">Speaking…</div>}
           {/* Grammar status */}
-          <div className="mt-2 text-xs text-gray-600">
+          <div className="mt-2 text-xs text-slate-600">
             {grammarStatus === "checking" && "Grammar: checking…"}
             {grammarStatus === "done" && "Grammar: applied ✅"}
             {grammarStatus === "error" && "Grammar: failed ❌"}
           </div>
 
           {/* Spell */}
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-gray-800">
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-slate-800">
             <b>Spellcheck:</b>
-            {spellLoading ? (
-              <span>checking…</span>
-            ) : lastCheckedWord ? (
-              <span>last: <i>{lastCheckedWord}</i></span>
-            ) : (
-              <span>—</span>
-            )}
-            {spellError && (
-              <span className="text-red-500">• {spellError}</span>
-            )}
+            {spellLoading ? <span>checking…</span> :
+             lastCheckedWord ? <span>last: <i>{lastCheckedWord}</i></span> : <span>—</span>}
+            {spellError && <span className="text-red-500">• {spellError}</span>}
             {spellSuggestions.length > 0 && (
-              <span className="text-xs text-gray-600">Use OP1…OP5 gestures to pick suggestions.</span>
+              <span className="text-xs text-slate-600">Use OP1…OP5 gestures to pick suggestions.</span>
             )}
           </div>
 
           {spellSuggestions.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {spellSuggestions.slice(0, 5).map((s, i) => (
-                <span key={s} className={`px-2 py-1 border rounded-lg text-sm ${i === 0 ? "bg-black text-white" : "bg-gray-50"}`}>
+                <span
+                  key={s}
+                  className={`px-2 py-1 border border-slate-200 rounded-lg text-sm ${
+                    i === 0 ? "bg-black text-white" : "bg-slate-50"
+                  }`}
+                >
                   {i + 1}. {s}
                 </span>
               ))}
@@ -462,6 +463,6 @@ export default function PredictPage() {
       </div>
 
       <Footer />
-    </>
+    </div>
   );
 }
